@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +54,18 @@ const EditProfile = () => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: "",
+      email: user?.email || "",
+      name: "",
+      birthDate: new Date(),
+      gender: "other",
+      description: "",
+    },
+  });
+
   const { data: profile } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
@@ -66,20 +79,18 @@ const EditProfile = () => {
       return data;
     },
     enabled: !!user,
-  });
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    values: profile
-      ? {
-          username: profile.username,
+    onSuccess: (data) => {
+      if (data) {
+        form.reset({
+          username: data.username,
           email: user?.email || "",
-          name: profile.full_name,
-          birthDate: new Date(profile.birth_date),
-          gender: profile.gender,
-          description: profile.description || "",
-        }
-      : undefined,
+          name: data.full_name,
+          birthDate: new Date(data.birth_date),
+          gender: data.gender,
+          description: data.description || "",
+        });
+      }
+    },
   });
 
   const updateProfile = useMutation({
@@ -160,6 +171,7 @@ const EditProfile = () => {
                           type="email"
                           placeholder="email@example.com"
                           {...field}
+                          disabled
                         />
                       </FormControl>
                       <FormMessage />
