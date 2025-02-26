@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -79,19 +79,20 @@ const EditProfile = () => {
       return data;
     },
     enabled: !!user,
-    onSuccess: (data) => {
-      if (data) {
-        form.reset({
-          username: data.username,
-          email: user?.email || "",
-          name: data.full_name,
-          birthDate: new Date(data.birth_date),
-          gender: data.gender,
-          description: data.description || "",
-        });
-      }
-    },
   });
+
+  useEffect(() => {
+    if (profile) {
+      form.reset({
+        username: profile.username,
+        email: user?.email || "",
+        name: profile.full_name,
+        birthDate: new Date(profile.birth_date),
+        gender: profile.gender,
+        description: profile.description || "",
+      });
+    }
+  }, [profile, user?.email, form]);
 
   const updateProfile = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
