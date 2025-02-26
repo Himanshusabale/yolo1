@@ -1,7 +1,7 @@
 
 ## Project info
 
-**URL**: https://usernest-journey.vercel.app/login
+**URL**: https://yolo1.lovable.app/login
 
 
 
