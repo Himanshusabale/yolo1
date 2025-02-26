@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +31,9 @@ import {
 } from "@/components/ui/popover";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 const formSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -48,34 +50,72 @@ const formSchema = z.object({
 
 const EditProfile = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user?.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    // This will be populated with actual user data once Supabase is connected
-    defaultValues: {
-      username: "",
-      email: "",
-      name: "",
-      description: "",
+    values: profile
+      ? {
+          username: profile.username,
+          email: user?.email || "",
+          name: profile.full_name,
+          birthDate: new Date(profile.birth_date),
+          gender: profile.gender,
+          description: profile.description || "",
+        }
+      : undefined,
+  });
+
+  const updateProfile = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          username: values.username,
+          full_name: values.name,
+          birth_date: values.birthDate,
+          gender: values.gender,
+          description: values.description,
+        })
+        .eq("id", user?.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
-      // This will be implemented once Supabase is connected
-      console.log("Update profile values:", values);
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
+      await updateProfile.mutateAsync(values);
     } finally {
       setIsLoading(false);
     }

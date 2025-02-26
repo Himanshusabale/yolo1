@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import AuthLayout from "@/components/AuthLayout";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 const formSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -24,6 +24,7 @@ const formSchema = z.object({
 
 const Login = () => {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
   const [error, setError] = useState("");
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -37,8 +38,7 @@ const Login = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setError("");
-      // This will be implemented once Supabase is connected
-      console.log("Login values:", values);
+      await signIn(values.username, values.password);
       navigate("/edit-profile");
     } catch (err) {
       setError("Invalid credentials");

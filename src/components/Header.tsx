@@ -1,15 +1,9 @@
 
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 
 const Header = () => {
-  const navigate = useNavigate();
-  const user = null; // This will be replaced with actual user data once Supabase is connected
-
-  const handleLogout = async () => {
-    // This will be implemented once Supabase is connected
-    navigate('/login');
-  };
+  const { user, signOut } = useAuth();
 
   if (!user) return null;
 
@@ -18,12 +12,12 @@ const Header = () => {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">
-            Welcome back
+            Welcome back, {user.email}
           </span>
         </div>
         <Button
           variant="ghost"
-          onClick={handleLogout}
+          onClick={() => signOut()}
           className="text-sm"
         >
           Log out

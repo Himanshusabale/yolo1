@@ -50,6 +50,7 @@ const formSchema = z.object({
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [error, setError] = useState("");
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -66,8 +67,14 @@ const Signup = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setError("");
-      // This will be implemented once Supabase is connected
-      console.log("Signup values:", values);
+      const metadata = {
+        username: values.username,
+        name: values.name,
+        birthDate: values.birthDate.toISOString(),
+        gender: values.gender,
+        description: values.description,
+      };
+      await signUp(values.email, values.password, metadata);
       navigate("/login");
     } catch (err) {
       setError("An error occurred during signup");
