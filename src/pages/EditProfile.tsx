@@ -89,7 +89,7 @@ const EditProfile = () => {
         .update({
           username: values.username,
           full_name: values.name,
-          birth_date: values.birthDate,
+          birth_date: values.birthDate.toISOString().split('T')[0],
           gender: values.gender,
           description: values.description,
         })
@@ -135,10 +135,7 @@ const EditProfile = () => {
               </p>
             </div>
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="username"
